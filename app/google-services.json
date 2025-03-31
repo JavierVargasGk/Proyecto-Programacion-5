@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "317631214978",
+    "project_id": "proyectoprogramacion5-c13d2",
+    "storage_bucket": "proyectoprogramacion5-c13d2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317631214978:android:4afaf2a0a1c2a150bf4b9b",
+        "android_client_info": {
+          "package_name": "com.ulatina.proyectoprogra5"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq7brkqctVfGPrP2tZ_Wvyd5LI-TJ383c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
