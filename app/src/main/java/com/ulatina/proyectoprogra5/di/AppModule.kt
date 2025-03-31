@@ -1,10 +1,10 @@
 package com.ulatina.proyectoprogra5.di
 
-import RutinasDao
+import usuarioDao
 import android.content.Context
 import androidx.lifecycle.LiveData
 import com.ulatina.proyectoprogra5.data.database.AppDataBase
-import com.ulatina.proyectoprogra5.data.database.model.Rutina
+import com.ulatina.proyectoprogra5.data.database.model.Usuario
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,12 +24,12 @@ object AppModule
         }
         @Provides
         @Singleton
-        fun providesItemDao(AppDataBase: AppDataBase): RutinasDao {
-            return AppDataBase.RutinasDao()
+        fun providesItemDao(AppDataBase: AppDataBase): usuarioDao {
+            return AppDataBase.UsuarioDao()
         }
         @Provides
         @Singleton
-        fun providesItemRep(itemDao: RutinasDao): LiveData<List<Rutina>> {
+        fun providesItemRep(itemDao: usuarioDao): LiveData<List<Usuario>> {
             return itemDao.getAll()
         }
 }

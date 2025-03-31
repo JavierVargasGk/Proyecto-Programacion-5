@@ -1,6 +1,6 @@
 package com.ulatina.proyectoprogra5.data.database
 
-import RutinasDao
+import usuarioDao
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -12,7 +12,7 @@ import com.ulatina.proyectoprogra5.data.database.model.Rutina
 abstract class AppDataBase : RoomDatabase()
 {
 
-    abstract fun RutinasDao(): RutinasDao
+    abstract fun UsuarioDao(): usuarioDao
 
     companion object
     {
@@ -26,7 +26,7 @@ abstract class AppDataBase : RoomDatabase()
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDataBase::class.java,
-                    "rutinas_db"
+                    "usuario_db"
                 ).build()
                 INSTANCE = instance
                 instance
