@@ -7,8 +7,9 @@ import com.ulatina.proyectoprogra5.data.database.model.Usuario
 import com.ulatina.proyectoprogra5.data.database.repository.UsuarioRepository
 
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RutinaViewModel(
+class UsuarioViewModel @Inject constructor(
     private val repository : UsuarioRepository
 ) : ViewModel() {
     val allItems: LiveData<List<Usuario>> get() = repository.getAll()
@@ -19,7 +20,7 @@ class RutinaViewModel(
     fun update(item: Usuario) = viewModelScope.launch {
         repository.update(item);
     }
-    fun deleteItem(item: Usuario) = viewModelScope.launch {
+    fun deleteUser(item: Usuario) = viewModelScope.launch {
         repository.delete(item)
     }
     fun deleteAll() = viewModelScope.launch {
