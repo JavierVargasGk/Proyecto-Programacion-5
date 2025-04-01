@@ -5,4 +5,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 
 @Composable
-fun Navigation(viewModelStoreOwner : ViewModelStoreOwner = LocalViewModelStoreOwner.current!!){}
+fun Navigation(viewModelStoreOwner : ViewModelStoreOwner = LocalViewModelStoreOwner.current!!){
+
+}

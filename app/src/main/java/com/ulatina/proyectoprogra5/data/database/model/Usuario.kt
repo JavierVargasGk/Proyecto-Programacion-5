@@ -8,5 +8,7 @@ data class Usuario(
     @PrimaryKey
     val id : String = "",
     val name : String = "",
+    val edad: Long = 0,
+    val nivelActividadFisica : Long = 0,
     val rutinas : List<Rutina>,
     val isSelected : Boolean = false)
