@@ -34,20 +34,20 @@ class UsuarioViewModel @Inject constructor(
             val liveData = MutableLiveData<List<Usuario>>()
             viewModelScope.launch {
                 try {
-                   firebaseRepo.getAll().observeForever{ firebaseUser ->
-                       val convertedUser = firebaseUser.map { firebaseUser ->
-                           Usuario(
-                               id = firebaseUser.id,
-                               name = firebaseUser.name,
-                               edad = firebaseUser.edad,
-                               nivelActividadFisica = firebaseUser.nivelActividadFisica,
-                               rutinas = firebaseUser.rutinas,
-                               isSelected = firebaseUser.isSelected
-                           )
-                       }
-                       _usuarios.postValue(convertedUser)
-                       liveData.postValue(convertedUser)
-                   }
+                    firebaseRepo.getAll().observeForever{ firebaseUser ->
+                        val convertedUser = firebaseUser.map { firebaseUser ->
+                            Usuario(
+                                id = firebaseUser.id,
+                                name = firebaseUser.name,
+                                edad = firebaseUser.edad,
+                                nivelActividadFisica = firebaseUser.nivelActividadFisica,
+                                rutinas = firebaseUser.rutinas,
+                                isSelected = firebaseUser.isSelected
+                            )
+                        }
+                        _usuarios.postValue(convertedUser)
+                        liveData.postValue(convertedUser)
+                    }
                 } catch(e: Exception){
                     _error.postValue("Error: ${e.message}")
                     liveData.postValue(repository.getAll().value ?: emptyList())
