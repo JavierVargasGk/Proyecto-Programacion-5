@@ -3,8 +3,8 @@ package com.ulatina.proyectoprogra5.data.database.model
 
 
 data class Ejercicios(
-        val name : String = "",
-        val reps : Long = 0,
-        val peso : Long = 0,
-        val isSelected : Boolean = false
+        var name : String = "",
+        var reps : Long = 0,
+        var peso : Long = 0,
+        var isSelected : Boolean = false
 )

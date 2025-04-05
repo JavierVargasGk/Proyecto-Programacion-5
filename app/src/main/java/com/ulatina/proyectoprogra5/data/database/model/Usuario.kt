@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "usuarios")
 data class Usuario(
     @PrimaryKey
-    val id : String = "",
-    val name : String = "",
-    val edad: Long = 0,
-    val nivelActividadFisica : Long = 0,
-    val rutinas : List<Rutina>,
-    val isSelected : Boolean = false)
+    var id : String = "",
+    var name : String = "",
+    var edad: Long = 0,
+    var nivelActividadFisica : Long = 0,
+    var rutinas : List<Rutina>,
+    var isSelected : Boolean = false)
