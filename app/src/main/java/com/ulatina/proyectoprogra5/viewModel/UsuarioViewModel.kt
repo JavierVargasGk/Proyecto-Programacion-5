@@ -40,6 +40,7 @@ class UsuarioViewModel @Inject constructor(
                                 id = firebaseUser.id,
                                 name = firebaseUser.name,
                                 edad = firebaseUser.edad,
+                                peso = firebaseUser.peso,
                                 nivelActividadFisica = firebaseUser.nivelActividadFisica,
                                 rutinas = firebaseUser.rutinas,
                                 isSelected = firebaseUser.isSelected

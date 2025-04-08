@@ -9,6 +9,7 @@ data class Usuario(
     var id : String = "",
     var name : String = "",
     var edad: Long = 0,
+    var peso : Long = 0,
     var nivelActividadFisica : Long = 0,
     var rutinas : List<Rutina>,
     var isSelected : Boolean = false)
