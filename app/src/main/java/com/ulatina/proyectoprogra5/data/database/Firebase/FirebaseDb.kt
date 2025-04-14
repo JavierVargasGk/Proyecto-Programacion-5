@@ -4,25 +4,50 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ulatina.proyectoprogra5.data.database.model.EjerciciosFirebase
 import com.ulatina.proyectoprogra5.data.database.model.UsuarioFirebase
+
 import javax.inject.Inject
 
 class FirebaseDb @Inject constructor(private val auth: FirebaseAuth, private val firestore: FirebaseFirestore) {
 
     private val folder1 = "Usuarios"
-    private val folder2 = "RutinasDeUsuario"
+    private val folder2 = "Datos"
     private val usuario: String
         get() = auth.currentUser?.email ?: throw IllegalStateException("Usuario no autenticado")
 
-    fun saveDeets(usuarios: UsuarioFirebase) {
-        val folder = if (usuarios.id.isEmpty()) {
+    fun saveUsuario(obj: UsuarioFirebase) {
+        val folder = if (obj.id.isEmpty()) {
             firestore.collection(folder1).document(usuario).collection(folder2).document()
-                .also { usuarios.id = it.id }
+                .also { obj.id = it.id }
         } else {
-            firestore.collection(folder1).document(usuario).collection(folder2).document()
+            firestore.collection(folder1).document(usuario)
         }
-        folder.set(usuarios)
-            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar doc", e) }
+        folder.set(obj)
+            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
+
+    }
+    fun saveRutina(obj: UsuarioFirebase) {
+        val folder = if (obj.id.isEmpty()) {
+            firestore.collection(folder1).document(usuario).collection(folder2).document("Rutinas")
+                .also { obj.id = it.id }
+        } else {
+            firestore.collection(folder1).document(usuario)
+        }
+        folder.set(obj)
+            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
+
+    }
+    fun saveEjercicio(obj: EjerciciosFirebase) {
+        val folder = if (obj.id.isEmpty()) {
+            firestore.collection(folder1).document(usuario).collection(folder2).document()
+                .also { obj.id = it.id }
+        } else {
+            firestore.collection(folder1).document(usuario)
+        }
+        folder.set(obj)
+            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
+
     }
 
     fun deleteDeets(usuarios: UsuarioFirebase) {

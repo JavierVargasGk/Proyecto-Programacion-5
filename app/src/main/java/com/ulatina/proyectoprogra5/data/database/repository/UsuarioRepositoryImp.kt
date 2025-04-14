@@ -1,12 +1,13 @@
 package com.ulatina.proyectoprogra5.data.database.repository
 
-import usuarioDao
+
+
 import androidx.lifecycle.LiveData
-import com.ulatina.proyectoprogra5.data.database.model.Rutina
+import com.ulatina.proyectoprogra5.data.database.interfaces.UsuarioDao
 import com.ulatina.proyectoprogra5.data.database.model.Usuario
 import javax.inject.Inject
 
-class UsuarioRepository @Inject constructor(private val usuarioDao: usuarioDao)
+class UsuarioRepository @Inject constructor(private val usuarioDao: UsuarioDao)
 {
     fun getAll() : LiveData<List<Usuario>>
     {

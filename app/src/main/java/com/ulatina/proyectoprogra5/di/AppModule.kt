@@ -1,6 +1,6 @@
 package com.ulatina.proyectoprogra5.di
 
-import usuarioDao
+import com.ulatina.proyectoprogra5.data.database.interfaces.UsuarioDao
 import android.content.Context
 import androidx.lifecycle.LiveData
 import com.ulatina.proyectoprogra5.data.database.AppDataBase
@@ -24,12 +24,12 @@ object AppModule
         }
         @Provides
         @Singleton
-        fun providesItemDao(AppDataBase: AppDataBase): usuarioDao {
-            return AppDataBase.UsuarioDao()
+        fun providesItemDao(appDataBase: AppDataBase): UsuarioDao {
+            return appDataBase.UsuarioDao()
         }
         @Provides
         @Singleton
-        fun providesItemRep(itemDao: usuarioDao): LiveData<List<Usuario>> {
+        fun providesItemRep(itemDao: UsuarioDao): LiveData<List<Usuario>> {
             return itemDao.getAll()
         }
 }

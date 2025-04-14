@@ -1,10 +1,11 @@
 package com.ulatina.proyectoprogra5.data.database
 
-import usuarioDao
+
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.ulatina.proyectoprogra5.data.database.interfaces.UsuarioDao
 import com.ulatina.proyectoprogra5.data.database.model.Rutina
 
 
@@ -12,7 +13,7 @@ import com.ulatina.proyectoprogra5.data.database.model.Rutina
 abstract class AppDataBase : RoomDatabase()
 {
 
-    abstract fun UsuarioDao(): usuarioDao
+    abstract fun UsuarioDao(): UsuarioDao
 
     companion object
     {
@@ -32,6 +33,5 @@ abstract class AppDataBase : RoomDatabase()
                 instance
             }
         }
-
     }
 }
