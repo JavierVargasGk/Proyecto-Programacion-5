@@ -60,8 +60,7 @@ fun AddRoutine(
                     } else {
                         error = "El nombre de la rutina no puede estar vacío"
                     }
-                },
-                enabled = rutinaNombre.isNotEmpty() && !guardando
+                }
             ) {
                 Icon(Icons.Default.Save, contentDescription = "Guardar")
             }

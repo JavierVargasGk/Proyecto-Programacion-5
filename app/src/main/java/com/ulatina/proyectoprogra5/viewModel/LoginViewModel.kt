@@ -8,6 +8,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import com.ulatina.proyectoprogra5.data.database.di.FirebaseModule
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(private val auth : FirebaseAuth) : ViewModel(){

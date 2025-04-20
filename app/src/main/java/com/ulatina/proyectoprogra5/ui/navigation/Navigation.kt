@@ -20,9 +20,9 @@ fun Navigation(viewModelStoreOwner : ViewModelStoreOwner = LocalViewModelStoreOw
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = "authLoginScreen"
+            startDestination = "MainScreen"
         ){
-            composable("authLoginScreen"){
+            composable("MainScreen"){
                 val viewModel: UsuarioViewModel = hiltViewModel(viewModelStoreOwner)
                 val loginViewModel : LoginViewModel = hiltViewModel(viewModelStoreOwner)
                 MainScreen(navController = navController, loginViewModel ,viewModel)
