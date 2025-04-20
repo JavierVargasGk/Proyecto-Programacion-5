@@ -32,7 +32,7 @@ fun MainScreen(
     val currentUser = loginViewModel.currentUser.value
 
     LaunchedEffect(Unit) {
-        usuarioViewModel.getUsuarios(true)
+        usuarioViewModel.getUsuarios()
     }
 
     Scaffold(
@@ -82,7 +82,7 @@ fun MainScreen(
                     )
 
                     Button(
-                        onClick = { usuarioViewModel.getUsuarios(true) },
+                        onClick = { usuarioViewModel.getUsuarios() },
                         modifier = Modifier.padding(top = 16.dp)
                     ) {
                         Text("Reintentar")

@@ -48,8 +48,8 @@ fun AddRoutine(
                         try {
                             val nuevaRutina = RutinaFirebase(
                                 name = rutinaNombre,
-                                idUsuario = 0,
-                                isSelected = false
+                                isSelected = false,
+                                ejercicios = listOf()
                             )
 
                             navController.popBackStack()

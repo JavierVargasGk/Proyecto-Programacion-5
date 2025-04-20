@@ -23,7 +23,7 @@ import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
 @Composable
 fun ViewRoutineDetails(
     navController: NavController,
-    rutinaId: String,
+    rutinaId: Long,
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
 
@@ -37,13 +37,12 @@ fun ViewRoutineDetails(
     LaunchedEffect(rutinaId) {
         try {
 
-            rutina = RutinaFirebase(id = rutinaId, name = "Rutina de ejemplo")
 
             ejercicios = listOf(
-                EjerciciosFirebase(idRutina = 0, id = "1", name = "Press de banca", reps = 12, peso = 60),
-                EjerciciosFirebase(idRutina = 0, id = "2", name = "Sentadillas", reps = 15, peso = 80)
+                EjerciciosFirebase(id = "1", name = "Press de banca", reps = 12, peso = 60),
+                EjerciciosFirebase(id = "2", name = "Sentadillas", reps = 15, peso = 80)
             )
-
+            rutina = RutinaFirebase(id = rutinaId, name = "Rutina de ejemplo",ejercicios = ejercicios)
             loading = false
         } catch (e: Exception) {
             error = "Error al cargar los detalles: ${e.message}"

@@ -13,15 +13,15 @@ class FirebaseRepo  @Inject constructor (
     }
     suspend fun insertOrUpdate(item: UsuarioFirebase)
     {
-        db.saveDeets(item)
+        db.saveUsuario(item)
     }
 
     suspend fun deleteAll()
     {
         db.deleteAll()
     }
-    suspend fun delete(item: UsuarioFirebase)
+    suspend fun deleteRutinas(item: UsuarioFirebase, rutinaId: Long)
     {
-        db.deleteDeets(item)
+        db.deleteRutina(item,rutinaId)
     }
 }

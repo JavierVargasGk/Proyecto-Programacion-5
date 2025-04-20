@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.icons.filled.Save
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -73,7 +73,6 @@ fun AddExercise(
 
                         try {
                             val nuevoEjercicio = EjerciciosFirebase(
-                                idRutina = rutinaId.toLongOrNull() ?: 0,
                                 name = ejercicioNombre,
                                 reps = repeticiones.toLongOrNull() ?: 0,
                                 peso = peso.toLongOrNull() ?: 0

@@ -27,61 +27,45 @@ class FirebaseDb @Inject constructor(private val auth: FirebaseAuth, private val
             .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
 
     }
-    fun saveRutina(obj: UsuarioFirebase) {
-        val folder = if (obj.id.isEmpty()) {
-            firestore.collection(folder1).document(usuario).collection(folder2).document("Rutinas")
-                .also { obj.id = it.id }
-        } else {
-            firestore.collection(folder1).document(usuario)
-        }
-        folder.set(obj)
-            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
-
-    }
-    fun saveEjercicio(obj: EjerciciosFirebase) {
-        val folder = if (obj.id.isEmpty()) {
-            firestore.collection(folder1).document(usuario).collection(folder2).document()
-                .also { obj.id = it.id }
-        } else {
-            firestore.collection(folder1).document(usuario)
-        }
-        folder.set(obj)
-            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
-
-    }
-
-    fun deleteDeets(usuarios: UsuarioFirebase) {
+    fun deleteRutina(usuarios: UsuarioFirebase, rutinaId: Long) {
         if (usuarios.id.isNotEmpty()) {
-            firestore.collection(folder1).document(usuario).collection(folder2).document(usuarios.id)
-                .delete().addOnSuccessListener {
-                Log.d("DeleteObjeto", "Objeto eliminado")
+            if (usuarios.rutinas.isNotEmpty()) {
+                val updatedRutinas = usuarios.rutinas.filterNot { it.id == rutinaId }
+                firestore.collection(folder1)
+                    .document(usuario)
+                    .collection(folder2)
+                    .document(usuarios.id)
+                    .update("rutinas", updatedRutinas)
+                    .addOnSuccessListener {
+                        Log.d("DeleteRutina", "Rutina eliminada ")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("DeleteRutina", "Error al eliminar rutina: ${e.message}")
+                    }
             }
-                .addOnCanceledListener {
-                    Log.e("DeleteObjeto", "Objeto NO eliminado")
-                }
         }
     }
 
     fun getDeets(): MutableLiveData<List<UsuarioFirebase>> {
         val deets = MutableLiveData<List<UsuarioFirebase>>()
-        firestore.collection(folder1).document(usuario).collection(folder2)
-            .addSnapshotListener { instant, error ->
+        firestore.collection(folder1)
+            .document(usuario)
+            .collection(folder2)
+            .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    Log.e("FirebaseDb", "Error getting usuarios", error)
                     return@addSnapshotListener
                 }
-                if (instant != null){
-                    val lista= ArrayList<UsuarioFirebase>()
-                    instant.documents.forEach {
-                        var i = it.toObject(UsuarioFirebase::class.java)
-                        if (i != null){
-                            lista.add(i)
-                        }
+                snapshot?.let {
+                    val lista = it.documents.mapNotNull { doc ->
+                        doc.toObject(UsuarioFirebase::class.java)
                     }
-                    deets.value= lista
+                    deets.value = lista
                 }
             }
         return deets
     }
+
 
     fun deleteAll(){
         val resultLiveData = MutableLiveData<Boolean>()
