@@ -59,10 +59,7 @@ class LoginViewModel @Inject constructor(private val auth : FirebaseAuth, privat
                         val newUser = UsuarioFirebase(
                             id = user.uid,
                             name = username,
-                            edad = 0,
-                            peso = 0,
                             rutinas = listOf(),
-                            nivelActividadFisica = 0,
                             isSelected = false
                         )
                         repo.insertOrUpdate(newUser)
