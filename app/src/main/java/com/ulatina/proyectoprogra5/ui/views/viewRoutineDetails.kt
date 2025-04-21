@@ -23,8 +23,7 @@ import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
 @Composable
 fun ViewRoutineDetails(
     navController: NavController,
-    rutinaId: Long,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    rutinaId: Long
 ) {
 
     var rutina by remember { mutableStateOf<RutinaFirebase?>(null) }
@@ -33,22 +32,6 @@ fun ViewRoutineDetails(
     var error by remember { mutableStateOf<String?>(null) }
     var confirmDeleteDialog by remember { mutableStateOf(false) }
     var ejercicioToDelete by remember { mutableStateOf<EjerciciosFirebase?>(null) }
-
-    LaunchedEffect(rutinaId) {
-        try {
-
-
-            ejercicios = listOf(
-                EjerciciosFirebase(id = "1", name = "Press de banca", reps = 12, peso = 60),
-                EjerciciosFirebase(id = "2", name = "Sentadillas", reps = 15, peso = 80)
-            )
-            rutina = RutinaFirebase(id = rutinaId, name = "Rutina de ejemplo",ejercicios = ejercicios)
-            loading = false
-        } catch (e: Exception) {
-            error = "Error al cargar los detalles: ${e.message}"
-            loading = false
-        }
-    }
 
     Scaffold(
         topBar = {
