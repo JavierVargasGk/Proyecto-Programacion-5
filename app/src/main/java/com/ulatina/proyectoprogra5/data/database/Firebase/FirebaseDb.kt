@@ -3,101 +3,170 @@ package com.ulatina.proyectoprogra5.data.database.Firebase
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.*
 import com.ulatina.proyectoprogra5.data.database.model.EjerciciosFirebase
+import com.ulatina.proyectoprogra5.data.database.model.RutinaFirebase
 import com.ulatina.proyectoprogra5.data.database.model.UsuarioFirebase
-
+import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
+import kotlin.coroutines.resumeWithException
 
-class FirebaseDb @Inject constructor(private val auth: FirebaseAuth, private val firestore: FirebaseFirestore) {
+class FirebaseDb @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val database: FirebaseDatabase
+) {
 
-    private val folder1 = "Usuarios"
-    private val folder2 = "Datos"
-    private val usuario: String
-        get() = auth.currentUser?.email ?: throw IllegalStateException("Usuario no autenticado")
+    private val usuariosRef: DatabaseReference
+        get() = database.getReference("Usuarios/${auth.currentUser?.uid ?: throw IllegalStateException("Usuario no autenticado")}")
 
     fun saveUsuario(obj: UsuarioFirebase) {
-        val folder = if (obj.id.isEmpty()) {
-            firestore.collection(folder1).document(usuario).collection(folder2).document()
-                .also { obj.id = it.id }
+        if (obj.id.isEmpty()) {
+            val newRef = usuariosRef.push()
+            obj.id = newRef.key ?: ""
+            newRef.setValue(obj)
         } else {
-            firestore.collection(folder1).document(usuario)
+            usuariosRef.child(obj.id).setValue(obj)
         }
-        folder.set(obj)
-            .addOnFailureListener { e -> Log.e("Firestore", "Error al guardar usuario", e) }
-
     }
-    fun deleteRutina(usuarios: UsuarioFirebase, rutinaId: Long) {
-        if (usuarios.id.isNotEmpty()) {
-            if (usuarios.rutinas.isNotEmpty()) {
-                val updatedRutinas = usuarios.rutinas.filterNot { it.id == rutinaId }
-                firestore.collection(folder1)
-                    .document(usuario)
-                    .collection(folder2)
-                    .document(usuarios.id)
-                    .update("rutinas", updatedRutinas)
-                    .addOnSuccessListener {
-                        Log.d("DeleteRutina", "Rutina eliminada ")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("DeleteRutina", "Error al eliminar rutina: ${e.message}")
-                    }
+    fun guardarEjercicio(
+        userId: String,
+        rutinaId: String,
+        ejercicio: EjerciciosFirebase,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.reference.child("Usuarios").child(userId).child(userId)
+        userRef.get().addOnSuccessListener { snapshot ->
+            val usuario = snapshot.getValue(UsuarioFirebase::class.java)
+            if (usuario == null) {
+                onFailure("Usuario no encontrado")
+                return@addOnSuccessListener
             }
+            val rutinas = usuario.rutinas?.toMutableList() ?: mutableListOf()
+            val rutinaIndex = rutinas.indexOfFirst { it.id == rutinaId }
+            val ejercicioId = userRef.push().key
+            if (ejercicioId == null) {
+                onFailure("No se pudo generar ID para el ejercicio")
+                return@addOnSuccessListener
+            }
+            if (rutinaIndex == -1) {
+                onFailure("Rutina no encontrada")
+                return@addOnSuccessListener
+            }
+            ejercicio.id = ejercicioId
+            val rutina = rutinas[rutinaIndex]
+            val ejerciciosActualizados = rutina.ejercicios?.toMutableList() ?: mutableListOf()
+            ejerciciosActualizados.add(ejercicio)
+            rutinas[rutinaIndex] = rutina.copy(ejercicios = ejerciciosActualizados)
+            val usuarioActualizado = usuario.copy(rutinas = rutinas)
+            userRef.setValue(usuarioActualizado)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { e -> onFailure(e.message ?: "Error al guardar ejercicio") }
+        }.addOnFailureListener { e ->
+            onFailure("Error al acceder a Firebase: ${e.message}")
+        }
+    }
+    fun getRutina(
+        userId: String,
+        rutinaId: String,
+        onSuccess: (List<EjerciciosFirebase>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val ref = FirebaseDatabase.getInstance()
+            .reference
+            .child("Usuarios")
+            .child(userId)
+            .child(userId)
+
+        ref.get().addOnSuccessListener { snapshot ->
+            val usuario = snapshot.getValue(UsuarioFirebase::class.java)
+            if (usuario != null) {
+                val rutina = usuario.rutinas?.find { it.id == rutinaId }
+                if (rutina != null) {
+                    onSuccess(rutina.ejercicios ?: emptyList())
+                } else {
+                    onFailure("Rutina no encontrada")
+                }
+            } else {
+                onFailure("Usuario no encontrado")
+            }
+        }.addOnFailureListener { e ->
+            onFailure(e.message ?: "Error al acceder a Firebase")
+        }
+    }
+
+
+
+
+
+
+    fun deleteEjercicio(
+        userId: String,
+        rutinaId: String,
+        ejercicioId: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val database = FirebaseDatabase.getInstance()
+        val userRef = database.reference.child("Usuarios").child(userId).child(userId)
+
+        userRef.get().addOnSuccessListener { snapshot ->
+            val usuario = snapshot.getValue(UsuarioFirebase::class.java)
+            if (usuario == null) {
+                onFailure("Usuario no encontrado")
+                return@addOnSuccessListener
+            }
+
+            val rutinas = usuario.rutinas?.toMutableList() ?: mutableListOf()
+            val rutinaIndex = rutinas.indexOfFirst { it.id == rutinaId }
+            if (rutinaIndex == -1) {
+                onFailure("Rutina no encontrada")
+                return@addOnSuccessListener
+            }
+
+            val rutina = rutinas[rutinaIndex]
+            val ejerciciosActualizados = rutina.ejercicios?.filterNot { it.id == ejercicioId } ?: listOf()
+            rutinas[rutinaIndex] = rutina.copy(ejercicios = ejerciciosActualizados)
+
+            val usuarioActualizado = usuario.copy(rutinas = rutinas)
+            userRef.setValue(usuarioActualizado)
+                .addOnSuccessListener { onSuccess() }
+                .addOnFailureListener { e ->
+                    onFailure("Error al eliminar ejercicio: ${e.message}")
+                }
+
+        }.addOnFailureListener { e ->
+            onFailure("Error al acceder a Firebase: ${e.message}")
         }
     }
 
     fun getDeets(): MutableLiveData<List<UsuarioFirebase>> {
-        val deets = MutableLiveData<List<UsuarioFirebase>>()
-        firestore.collection(folder1)
-            .document(usuario)
-            .collection(folder2)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.e("FirebaseDb", "Error getting usuarios", error)
-                    return@addSnapshotListener
+        val liveData = MutableLiveData<List<UsuarioFirebase>>()
+
+        usuariosRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val usuarios = snapshot.children.mapNotNull {
+                    it.getValue(UsuarioFirebase::class.java)
                 }
-                snapshot?.let {
-                    val lista = it.documents.mapNotNull { doc ->
-                        doc.toObject(UsuarioFirebase::class.java)
-                    }
-                    deets.value = lista
-                }
+                liveData.value = usuarios
             }
-        return deets
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FirebaseDb", "Error al obtener datos: ${error.message}")
+            }
+        })
+
+        return liveData
     }
 
-
-    fun deleteAll(){
-        val resultLiveData = MutableLiveData<Boolean>()
-
-        val ref = firestore
-            .collection(folder1)
-            .document(usuario)
-            .collection(folder2)
-
-        ref.get()
-            .addOnSuccessListener { querySnapshot ->
-                val batch = firestore.batch()
-
-                querySnapshot.documents.forEach { document ->
-                    batch.delete(document.reference)
-                }
-
-                batch.commit()
-                    .addOnSuccessListener {
-                        Log.d("DeleteAll", "eliminados exitosamente")
-                        resultLiveData.value = true
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("DeleteAll", "Error al eliminar objeto: ${e.message}")
-                        resultLiveData.value = false
-                    }
+    fun deleteAll() {
+        usuariosRef.removeValue()
+            .addOnSuccessListener {
+                Log.d("DeleteAll", "Datos eliminados correctamente")
             }
             .addOnFailureListener { e ->
-                Log.e("DeleteAll", "Error al obtener items para eliminar: ${e.message}")
-                resultLiveData.value = false
+                Log.e("DeleteAll", "Error al eliminar datos: ${e.message}")
             }
-
-
     }
 }

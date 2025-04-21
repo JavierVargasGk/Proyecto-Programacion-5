@@ -6,12 +6,15 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
+import com.ulatina.proyectoprogra5.data.database.Firebase.FirebaseDb
+import com.ulatina.proyectoprogra5.data.database.Firebase.FirebaseRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.ulatina.proyectoprogra5.data.database.di.FirebaseModule
+import com.ulatina.proyectoprogra5.data.database.model.UsuarioFirebase
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val auth : FirebaseAuth) : ViewModel(){
+class LoginViewModel @Inject constructor(private val auth : FirebaseAuth, private val repo: FirebaseRepo) : ViewModel(){
     private val _uiState = mutableStateOf<AuthUiState>(AuthUiState.Initial)
     val uiState: State<AuthUiState> = _uiState
 
@@ -33,31 +36,53 @@ class LoginViewModel @Inject constructor(private val auth : FirebaseAuth) : View
             if (task.isSuccessful){
                 _uiState.value = AuthUiState.Success(auth.currentUser)
             } else {
-                _uiState.value = AuthUiState.Error("Ha ocurrido un error durante el proceso de ingreso")
+                _uiState.value = AuthUiState.Error("Email o contraseña incorrecto")
             }
         }
     }
 
     private fun IsValidEmail(email: String): Boolean {
-        val allowedChar = "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}\n"
-        return email.matches(allowedChar.toRegex())
+        val allowedChar = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}\$")
+        return email.matches(allowedChar)
     }
-    fun register(email: String, pass: String, username: String){
+    fun register(email: String, pass: String, username: String) {
         _uiState.value = AuthUiState.Loading
-        auth.createUserWithEmailAndPassword(email,pass).addOnCompleteListener{task->
-            if (task.isSuccessful){
-                val profileUpdates = UserProfileChangeRequest.Builder().setDisplayName(username).build()
+        auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
                 val user = auth.currentUser
-                user?.updateProfile(profileUpdates)?.addOnCompleteListener{task2->
-                    if(task2.isSuccessful){
+                val profileUpdates = UserProfileChangeRequest.Builder()
+                    .setDisplayName(username)
+                    .build()
+
+                user?.updateProfile(profileUpdates)?.addOnCompleteListener { task2 ->
+                    if (task2.isSuccessful && user != null) {
+                        val newUser = UsuarioFirebase(
+                            id = user.uid,
+                            name = username,
+                            edad = 0,
+                            peso = 0,
+                            rutinas = listOf(),
+                            nivelActividadFisica = 0,
+                            isSelected = false
+                        )
+                        repo.insertOrUpdate(newUser)
                         _uiState.value = AuthUiState.Success(user)
                     } else {
-                        _uiState.value = AuthUiState.Error(task2.exception?.message ?:"Se produjo un error a la hora de crear el perfil")
+                        _uiState.value = AuthUiState.Error(
+                            task2.exception?.message
+                                ?: "Se produjo un error al actualizar el perfil"
+                        )
                     }
                 }
-            } else { _uiState.value = AuthUiState.Error(task.exception?.message ?: "Se produjo un error a la hora de crear el perfil")}
+            } else {
+                _uiState.value = AuthUiState.Error(
+                    task.exception?.message
+                        ?: "Se produjo un error a la hora de crear el perfil"
+                )
+            }
         }
     }
+
     fun logout(){
         auth.signOut()
         _uiState.value = AuthUiState.Initial

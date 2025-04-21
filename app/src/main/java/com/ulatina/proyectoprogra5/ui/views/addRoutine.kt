@@ -10,13 +10,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ulatina.proyectoprogra5.data.database.model.RutinaFirebase
+import com.ulatina.proyectoprogra5.data.database.model.UsuarioFirebase
 import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
+import com.ulatina.proyectoprogra5.viewModel.UsuarioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddRoutine(
     navController: NavController,
+    usuarioViewModel: UsuarioViewModel = hiltViewModel(),
     loginViewModel: LoginViewModel = hiltViewModel()
 ) {
     var rutinaNombre by remember { mutableStateOf("") }
@@ -40,21 +45,59 @@ fun AddRoutine(
             guardando = true
             error = null
 
-            try {
+            val user = currentUser
+            val userId = user?.uid
+            if (userId == null) {
+                error = "Usuario no autenticado"
+                guardando = false
+                return
+            }
+
+            val database = FirebaseDatabase.getInstance()
+            val userRef = database.reference.child("Usuarios").child(userId).child(userId)
+
+            userRef.get().addOnSuccessListener { snapshot ->
+                val usuario = snapshot.getValue(UsuarioFirebase::class.java)
+                if (usuario == null) {
+                    error = "Usuario no encontrado en la base de datos"
+                    guardando = false
+                    return@addOnSuccessListener
+                }
+
+                val rutinaId = userRef.push().key ?: run {
+                    error = "No se pudo generar ID para la rutina"
+                    guardando = false
+                    return@addOnSuccessListener
+                }
+
                 val nuevaRutina = RutinaFirebase(
+                    id = rutinaId,
                     name = rutinaNombre,
                     isSelected = false,
                     ejercicios = listOf()
                 )
 
+                val rutinasActualizadas = usuario.rutinas.toMutableList().apply { add(nuevaRutina) }
+                val usuarioActualizado = usuario.copy(rutinas = rutinasActualizadas)
 
-                navController.popBackStack()
-            } catch (e: Exception) {
-                error = "Error al guardar: ${e.message}"
+                // Save the entire user again (including new rutina list)
+                userRef.setValue(usuarioActualizado)
+                    .addOnSuccessListener {
+                        guardando = false
+                        navController.popBackStack()
+                    }
+                    .addOnFailureListener { e ->
+                        error = "Error al guardar rutina: ${e.message}"
+                        guardando = false
+                    }
+            }.addOnFailureListener { e ->
+                error = "Error al acceder al usuario: ${e.message}"
                 guardando = false
             }
         }
     }
+
+
 
     Scaffold(
         topBar = {
@@ -101,7 +144,8 @@ fun AddRoutine(
 
 
                 Button(
-                    onClick = { guardarRutina() },
+                    onClick = { guardarRutina()
+                              guardando = false},
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),

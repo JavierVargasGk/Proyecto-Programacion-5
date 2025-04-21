@@ -109,14 +109,14 @@ fun AuthSignInScreen(
 
         Button(
             onClick = {
-                if (password == confirmPassword) {
+
                     viewModel.register(email, password, username)
-                }
+
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
-            enabled = password == confirmPassword && email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()
+            enabled = email.isNotEmpty() && password.isNotEmpty() && username.isNotEmpty()
         ) {
             Text("Registrarse")
         }

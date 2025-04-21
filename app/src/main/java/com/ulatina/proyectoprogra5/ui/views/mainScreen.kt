@@ -118,7 +118,8 @@ fun MainScreen(
                         RutinaItem(
                             rutina = rutina,
                             onClick = {
-                                navController.navigate("viewRoutineDetails/${rutina.id}")
+
+                                navController.navigate("routineDetails/${rutina.id}")
                             }
                         )
                     }

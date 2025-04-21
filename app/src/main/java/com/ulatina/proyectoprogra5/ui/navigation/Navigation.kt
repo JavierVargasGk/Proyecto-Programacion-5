@@ -13,7 +13,7 @@ import com.google.gson.Gson
 import com.ulatina.proyectoprogra5.ui.views.AddExercise
 import com.ulatina.proyectoprogra5.ui.views.AddRoutine
 import com.ulatina.proyectoprogra5.ui.views.AuthSignInScreen
-import com.ulatina.proyectoprogra5.ui.views.LoginScreen
+import com.ulatina.proyectoprogra5.ui.views.AuthLoginScreen
 import com.ulatina.proyectoprogra5.ui.views.MainScreen
 import com.ulatina.proyectoprogra5.ui.views.ViewRoutineDetails
 import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
@@ -24,7 +24,7 @@ fun Navigation(viewModelStoreOwner : ViewModelStoreOwner = LocalViewModelStoreOw
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = "MainScreen"
+            startDestination = "authLoginScreen"
         ){
             composable("MainScreen"){
                 val viewModel: UsuarioViewModel = hiltViewModel(viewModelStoreOwner)
@@ -32,20 +32,14 @@ fun Navigation(viewModelStoreOwner : ViewModelStoreOwner = LocalViewModelStoreOw
                 MainScreen(navController = navController, loginViewModel ,viewModel)
             }
             composable("routineDetails/{rutinaId}") { backStackEntry ->
-                val rutinaId = backStackEntry.arguments?.getString("rutinaId")?.toLongOrNull() ?: 0L
-                ViewRoutineDetails(navController = navController, rutinaId = rutinaId)
+                val rutinaId = backStackEntry.arguments?.getString("rutinaId") ?: ""
+                val viewModel: UsuarioViewModel = hiltViewModel(viewModelStoreOwner)
+                val loginViewModel : LoginViewModel = hiltViewModel(viewModelStoreOwner)
+                ViewRoutineDetails(navController = navController, rutinaId = rutinaId,loginViewModel)
             }
             composable("authLoginScreen") {
-                LoginScreen(
-                    onLoginSuccess = {
-                        navController.navigate("MainScreen") {
-                            popUpTo("authLoginScreen") { inclusive = true }
-                        }
-                    },
-                    onNavigateToRegister = {
-                        navController.navigate("AuthSignInScreen")
-                    }
-                )
+                val loginViewModel: LoginViewModel = hiltViewModel(viewModelStoreOwner)
+                AuthLoginScreen(navController, loginViewModel)
             }
             composable("authSignInScreen") {
                 AuthSignInScreen(navController = navController)
@@ -55,7 +49,9 @@ fun Navigation(viewModelStoreOwner : ViewModelStoreOwner = LocalViewModelStoreOw
                 arguments = listOf(navArgument("rutinaId") { type = NavType.StringType })
             ) { backStackEntry ->
                 val rutinaId = backStackEntry.arguments?.getString("rutinaId") ?: ""
-                AddExercise(navController = navController, rutinaId = rutinaId)
+                val viewModel: UsuarioViewModel = hiltViewModel(viewModelStoreOwner)
+                val loginViewModel : LoginViewModel = hiltViewModel(viewModelStoreOwner)
+                AddExercise(navController = navController, rutinaId = rutinaId, loginViewModel, viewModel)
             }
             composable("addRoutine") {
                 AddRoutine(navController = navController)

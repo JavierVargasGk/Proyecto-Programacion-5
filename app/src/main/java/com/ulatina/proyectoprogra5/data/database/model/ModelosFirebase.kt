@@ -12,11 +12,13 @@ data class UsuarioFirebase (
         constructor() : this("","",0,0, listOf(),0,false)
     }
 data class RutinaFirebase(
-    var id : Long = 0,
+    var id : String = "",
     var name : String = "",
     var ejercicios: List<EjerciciosFirebase>,
     var isSelected : Boolean = false
-)
+){
+    constructor() : this("", "", listOf(), false )
+}
 data class EjerciciosFirebase(
     var id: String = "",
     var name : String = "",

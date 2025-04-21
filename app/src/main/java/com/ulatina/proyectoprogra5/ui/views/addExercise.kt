@@ -11,22 +11,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ulatina.proyectoprogra5.data.database.model.EjerciciosFirebase
 import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
+import com.ulatina.proyectoprogra5.viewModel.UsuarioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddExercise(
     navController: NavController,
     rutinaId: String,
-    loginViewModel: LoginViewModel = hiltViewModel()
+    loginViewModel: LoginViewModel = hiltViewModel(),
+    usuarioViewModel: UsuarioViewModel = hiltViewModel()
 ) {
     var ejercicioNombre by remember { mutableStateOf("") }
     var repeticiones by remember { mutableStateOf("") }
     var peso by remember { mutableStateOf("") }
     var guardando by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    val currentUser = loginViewModel.currentUser.value
 
     fun validarCampos(): Boolean {
         return when {
@@ -57,7 +61,13 @@ fun AddExercise(
                     reps = repeticiones.toLongOrNull() ?: 0,
                     peso = peso.toLongOrNull() ?: 0
                 )
-
+                val user = currentUser?.uid
+                if (user == null) {
+                    error = "Usuario no autenticado"
+                    guardando = false
+                    return
+                }
+                usuarioViewModel.guardarEjercicio(user,rutinaId,nuevoEjercicio)
                 navController.popBackStack()
             } catch (e: Exception) {
                 error = "Error al guardar: ${e.message}"

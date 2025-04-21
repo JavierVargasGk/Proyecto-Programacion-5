@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,12 +19,15 @@ import androidx.navigation.NavController
 import com.ulatina.proyectoprogra5.data.database.model.EjerciciosFirebase
 import com.ulatina.proyectoprogra5.data.database.model.RutinaFirebase
 import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
+import com.ulatina.proyectoprogra5.viewModel.UsuarioViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ViewRoutineDetails(
     navController: NavController,
-    rutinaId: Long
+    rutinaId: String,
+    loginViewModel: LoginViewModel = hiltViewModel(),
+    usuarioViewModel : UsuarioViewModel = hiltViewModel()
 ) {
 
     var rutina by remember { mutableStateOf<RutinaFirebase?>(null) }
@@ -32,6 +36,34 @@ fun ViewRoutineDetails(
     var error by remember { mutableStateOf<String?>(null) }
     var confirmDeleteDialog by remember { mutableStateOf(false) }
     var ejercicioToDelete by remember { mutableStateOf<EjerciciosFirebase?>(null) }
+    var currentUser = loginViewModel.currentUser.value
+
+    LaunchedEffect(rutinaId) {
+        val userId = currentUser?.uid
+        if (userId == null) {
+            error = "Usuario no autenticado"
+            return@LaunchedEffect
+        }
+
+        loading = true
+        usuarioViewModel.getEjerciciosFromRutina(
+            userId = userId,
+            rutinaId = rutinaId,
+            onResult = { ejerciciosList ->
+                ejercicios = ejerciciosList
+                rutina = RutinaFirebase(
+                    id = rutinaId,
+                    name = "Detalles del Ejercicio",
+                    ejercicios = ejerciciosList
+                )
+                loading = false
+            },
+            onError = { errorMessage ->
+                error = errorMessage
+                loading = false
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -135,9 +167,15 @@ fun ViewRoutineDetails(
             confirmButton = {
                 TextButton(
                     onClick = {
-
-                        ejercicios = ejercicios.filter { it.id != ejercicioToDelete?.id }
-                        confirmDeleteDialog = false
+                        val userId = currentUser?.uid
+                        usuarioViewModel.deleteEjercicio(userId!!,rutinaId,ejercicioToDelete?.id!!,onSuccess = {
+                            ejercicios = ejercicios.filter { it.id != ejercicioToDelete?.id }
+                            confirmDeleteDialog = false
+                        },
+                            onFailure = {
+                                error = it
+                                confirmDeleteDialog = false
+                            })
                     }
                 ) {
                     Text("Eliminar")
