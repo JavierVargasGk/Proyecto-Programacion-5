@@ -3,7 +3,6 @@ package com.ulatina.proyectoprogra5.ui.views
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ulatina.proyectoprogra5.data.database.model.RutinaFirebase
-import com.ulatina.proyectoprogra5.data.database.model.UsuarioFirebase
 import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,6 +25,37 @@ fun AddRoutine(
 
     val currentUser = loginViewModel.currentUser.value
 
+    fun validarCampos(): Boolean {
+        return when {
+            rutinaNombre.isEmpty() -> {
+                error = "El nombre de la rutina no puede estar vacío"
+                false
+            }
+            else -> true
+        }
+    }
+
+    fun guardarRutina() {
+        if (!guardando && validarCampos()) {
+            guardando = true
+            error = null
+
+            try {
+                val nuevaRutina = RutinaFirebase(
+                    name = rutinaNombre,
+                    isSelected = false,
+                    ejercicios = listOf()
+                )
+
+
+                navController.popBackStack()
+            } catch (e: Exception) {
+                error = "Error al guardar: ${e.message}"
+                guardando = false
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -37,33 +66,6 @@ fun AddRoutine(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (rutinaNombre.isNotEmpty()) {
-                        guardando = true
-                        error = null
-
-                        try {
-                            val nuevaRutina = RutinaFirebase(
-                                name = rutinaNombre,
-                                isSelected = false,
-                                ejercicios = listOf()
-                            )
-
-                            navController.popBackStack()
-                        } catch (e: Exception) {
-                            error = "Error al guardar: ${e.message}"
-                            guardando = false
-                        }
-                    } else {
-                        error = "El nombre de la rutina no puede estar vacío"
-                    }
-                }
-            ) {
-                Icon(Icons.Default.Save, contentDescription = "Guardar")
-            }
         }
     ) { paddingValues ->
         Box(
@@ -97,18 +99,105 @@ fun AddRoutine(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+
+                Button(
+                    onClick = { guardarRutina() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    enabled = !guardando
+                ) {
+                    if (guardando) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text("GUARDAR RUTINA")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = "Después de crear la rutina, podrás agregar ejercicios.",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 16.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "Sugerencias:",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        SugerenciaRutina(nombre = "Rutina de Pecho", onSelect = {
+                            rutinaNombre = "Rutina de Pecho"
+                        })
+
+                        SugerenciaRutina(nombre = "Rutina de Piernas", onSelect = {
+                            rutinaNombre = "Rutina de Piernas"
+                        })
+
+                        SugerenciaRutina(nombre = "Rutina de Espalda", onSelect = {
+                            rutinaNombre = "Rutina de Espalda"
+                        })
+
+                        SugerenciaRutina(nombre = "Rutina Full Body", onSelect = {
+                            rutinaNombre = "Rutina Full Body"
+                        })
+                    }
+                }
             }
 
             if (guardando) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Guardando rutina...")
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun SugerenciaRutina(nombre: String, onSelect: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = nombre,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f)
+        )
+
+        TextButton(
+            onClick = onSelect
+        ) {
+            Text("Seleccionar")
         }
     }
 }

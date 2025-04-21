@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,12 +14,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ulatina.proyectoprogra5.data.database.model.EjerciciosFirebase
 import com.ulatina.proyectoprogra5.viewModel.LoginViewModel
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.Text
-import androidx.compose.material3.ExperimentalMaterial3Api
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +46,26 @@ fun AddExercise(
         }
     }
 
+    fun guardarEjercicio() {
+        if (!guardando && validarCampos()) {
+            guardando = true
+            error = null
+
+            try {
+                val nuevoEjercicio = EjerciciosFirebase(
+                    name = ejercicioNombre,
+                    reps = repeticiones.toLongOrNull() ?: 0,
+                    peso = peso.toLongOrNull() ?: 0
+                )
+
+                navController.popBackStack()
+            } catch (e: Exception) {
+                error = "Error al guardar: ${e.message}"
+                guardando = false
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,31 +76,6 @@ fun AddExercise(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (!guardando) {
-                        guardando = true
-                        error = null
-
-                        try {
-                            val nuevoEjercicio = EjerciciosFirebase(
-                                name = ejercicioNombre,
-                                reps = repeticiones.toLongOrNull() ?: 0,
-                                peso = peso.toLongOrNull() ?: 0
-                            )
-
-                            navController.popBackStack()
-                        } catch (e: Exception) {
-                            error = "Error al guardar: ${e.message}"
-                            guardando = false
-                        }
-                    }
-                }
-            ) {
-                Icon(Icons.Default.Save, contentDescription = "Guardar")
-            }
         }
     ) { paddingValues ->
         Box(
@@ -143,13 +131,31 @@ fun AddExercise(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Button(
+                    onClick = { guardarEjercicio() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    enabled = !guardando
+                ) {
+                    if (guardando) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text("GUARDAR EJERCICIO")
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = "Agrega este ejercicio a tu rutina de entrenamiento para seguir tu progreso.",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                // Sugerencias de ejercicios comunes
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,13 +193,25 @@ fun AddExercise(
             }
 
             if (guardando) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator()
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Guardando ejercicio...")
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun SugerenciaEjercicio(nombre: String, onSelect: () -> Unit) {
