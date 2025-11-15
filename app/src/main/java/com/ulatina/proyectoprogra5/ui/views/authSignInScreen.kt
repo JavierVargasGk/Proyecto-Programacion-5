@@ -85,7 +85,6 @@ fun AuthSignInScreen(
             value = confirmPassword,
             onValueChange = {
                 confirmPassword = it
-                passwordError = if (password != it) "Las contraseñas no coinciden" else null
             },
             label = { Text("Confirmar contraseña") },
             modifier = Modifier
